@@ -1,0 +1,871 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="../../../../lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="../../../../lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="../../../../css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="../../../../favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="概述：Handler、Looper、Message可谓android中最基本的消息处理机制，但是要理清这三者关系需要一定的研究。本文从java层和native层深入探讨一下这里面的关系。
+##Java层理解Native层关系图：
+###实例先展示一个典型的例子：
+
+class LooperThread extends Thread {
+    public Handler mHandler;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Handler-Looper-Message">
+<meta property="og:url" content="http://HHcola.github.io/2017/04/09/Handler-Looper-Message-0/index.html">
+<meta property="og:site_name" content="HHcola">
+<meta property="og:description" content="概述：Handler、Looper、Message可谓android中最基本的消息处理机制，但是要理清这三者关系需要一定的研究。本文从java层和native层深入探讨一下这里面的关系。
+##Java层理解Native层关系图：
+###实例先展示一个典型的例子：
+
+class LooperThread extends Thread {
+    public Handler mHandler;">
+<meta property="og:image" content="http://HHcola.github.io/Handler-Looper-Message-0/message-java.jpg">
+<meta property="og:image" content="http://HHcola.github.io/Handler-Looper-Message-0/java_sendmessage.png">
+<meta property="og:image" content="http://HHcola.github.io/Handler-Looper-Message-0/message-looper.jpg">
+<meta property="og:image" content="http://HHcola.github.io/Handler-Looper-Message-0/native_init.png">
+<meta property="og:image" content="http://HHcola.github.io/Handler-Looper-Message-0/native_wake.png">
+<meta property="og:image" content="http://HHcola.github.io/Handler-Looper-Message-0/handler_arch.png">
+<meta property="og:updated_time" content="2017-04-08T18:07:56.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Handler-Looper-Message">
+<meta name="twitter:description" content="概述：Handler、Looper、Message可谓android中最基本的消息处理机制，但是要理清这三者关系需要一定的研究。本文从java层和native层深入探讨一下这里面的关系。
+##Java层理解Native层关系图：
+###实例先展示一个典型的例子：
+
+class LooperThread extends Thread {
+    public Handler mHandler;">
+<meta name="twitter:image" content="http://HHcola.github.io/Handler-Looper-Message-0/message-java.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://HHcola.github.io/2017/04/09/Handler-Looper-Message-0/"/>
+
+
+
+
+
+  <title> Handler-Looper-Message | HHcola </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">HHcola</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://HHcola.github.io">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="HHcola">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="../../../../images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="HHcola">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Handler-Looper-Message
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-09T01:48:33+08:00">
+                2017-04-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="概述："><a href="#概述：" class="headerlink" title="概述："></a>概述：</h1><p>Handler、Looper、Message可谓android中最基本的消息处理机制，但是要理清这三者关系需要一定的研究。本文从java层和native层深入探讨一下这里面的关系。</p>
+<p>##Java层理解<br>Native层关系图：<br><img src="Handler-Looper-Message-0/message-java.jpg" alt="关系图"></p>
+<p>###实例<br>先展示一个典型的例子：</p>
+<pre>
+class LooperThread extends Thread {
+    public Handler mHandler;
+    public void run() {
+        Looper.prepare();  
+        mHandler = new Handler() { 
+            public void handleMessage(Message msg) {
+                //TODO    定义消息处理逻辑
+            }
+        };
+        Looper.loop(); 
+    }
+}
+</pre>
+
+<p>###消息发送图：<br><img src="Handler-Looper-Message-0/java_sendmessage.png" alt="消息图"></p>
+<p>###消息流程图：<br><img src="Handler-Looper-Message-0/message-looper.jpg" alt="流程图"></p>
+<p>图解：</p>
+<p>####Handler通过sendMessage()发送Message到MessageQueue队列；</p>
+<p>####Looper通过loop()，不断提取出达到触发条件的Message，并将Message交给target来处理；</p>
+<p>####经过dispatchMessage()后，交回给Handler的handleMessage()来进行相应地处理。</p>
+<p>####将Message加入MessageQueue时，处往管道写入字符，可以会唤醒loop线程；如果MessageQueue中没有Message，并处于Idle状态，则会执行IdelHandler接口中的方法，往往用于做一些清理性地工作。</p>
+<p>###消息分发的优先级：</p>
+<pre>
+public void dispatchMessage(Message msg) {
+    if (msg.callback != null) {
+        //当Message存在回调方法，回调msg.callback.run()方法；
+        handleCallback(msg);
+    } else {
+        if (mCallback != null) {
+            //当Handler存在Callback成员变量时，回调方法handleMessage()；
+            if (mCallback.handleMessage(msg)) {
+                return;
+            }
+        }
+        //Handler自身的回调方法handleMessage()
+        handleMessage(msg);
+    }
+}
+</pre>
+从消息分发代码中能够分析出消息分发优先级：
+####Message的回调方法：message.callback.run()，优先级最高；
+####Handler的回调方法：Handler.mCallback.handleMessage(msg)，优先级仅次于1；
+####Handler的默认方法：Handler.handleMessage(msg)，优先级最低。
+
+##Native层理解
+java层的MessageQueue类里面涉及到多个native方法，除了MessageQueue的native方法，native层本身也有一套完整的消息机制，用于处理native的消息。在整个消息机制中，而MessageQueue是连接Java层和Native层的纽带，换言之，Java层可以向MessageQueue消息队列中添加消息，Native层也可以向MessageQueue消息队列中添加消息。
+
+Native层关系图：
+![关系图](Handler-Looper-Message-0/message-native.png)
+
+###MessageQueue
+在MessageQueue中的native方法如下：
+<pre>
+private native static long nativeInit();
+private native static void nativeDestroy(long ptr);
+private native void nativePollOnce(long ptr, int timeoutMillis);
+private native static void nativeWake(long ptr);
+private native static boolean nativeIsPolling(long ptr);
+private native static void nativeSetFileDescriptorEvents(long ptr, int fd, int events);
+</pre>
+
+<p>初始化过程的调用链如下：</p>
+<p><img src="Handler-Looper-Message-0/native_init.png" alt="init"><br>其中epoll_create/epoll_ctl源码如下：</p>
+<pre>
+void Looper::rebuildEpollLocked() {
+    if (mEpollFd >= 0) {
+        close(mEpollFd); //关闭旧的epoll实例
+    }
+    mEpollFd = epoll_create(EPOLL_SIZE_HINT); //创建新的epoll实例，并注册wake管道
+    struct epoll_event eventItem;
+    memset(& eventItem, 0, sizeof(epoll_event)); //把未使用的数据区域进行置0操作
+    eventItem.events = EPOLLIN; //可读事件
+    eventItem.data.fd = mWakeEventFd;
+    //将唤醒事件(mWakeEventFd)添加到epoll实例(mEpollFd)
+    int result = epoll_ctl(mEpollFd, EPOLL_CTL_ADD, mWakeEventFd, & eventItem);
+    for (size_t i = 0; i < mRequests.size(); i++) {
+        const Request& request = mRequests.valueAt(i);
+        struct epoll_event eventItem;
+        request.initEventItem(&eventItem);
+        //将request队列的事件，分别添加到epoll实例
+        int epollResult = epoll_ctl(mEpollFd, EPOLL_CTL_ADD, request.fd, & eventItem);
+        if (epollResult < 0) {
+            ALOGE("Error adding epoll events for fd %d while rebuilding epoll set, errno=%d", request.fd, errno);
+        }
+    }
+}
+</pre>
+
+<p>这里为什么会用epoll而不是poll、select？</p>
+<p>这里重要的方法是pollinner,重点看一下这个方法：</p>
+<pre>
+int Looper::pollInner(int timeoutMillis) {
+    ...
+    int result = POLL_WAKE;
+    mResponses.clear();
+    mResponseIndex = 0;
+    mPolling = true; //即将处于idle状态
+    struct epoll_event eventItems[EPOLL_MAX_EVENTS]; //fd最大个数为16
+    //等待事件发生或者超时，在nativeWake()方法，向管道写端写入字符，则该方法会返回；
+    int eventCount = epoll_wait(mEpollFd, eventItems, EPOLL_MAX_EVENTS, timeoutMillis);
+    mPolling = false; //不再处于idle状态
+    mLock.lock();  //请求锁
+    if (mEpollRebuildRequired) {
+        mEpollRebuildRequired = false;
+        rebuildEpollLocked();  // epoll重建，直接跳转Done;
+        goto Done;
+    }
+    if (eventCount < 0) {
+        if (errno == EINTR) {
+            goto Done;
+        }
+        result = POLL_ERROR; // epoll事件个数小于0，发生错误，直接跳转Done;
+        goto Done;
+    }
+    if (eventCount == 0) {  //epoll事件个数等于0，发生超时，直接跳转Done;
+        result = POLL_TIMEOUT;
+        goto Done;
+    }
+    //循环遍历，处理所有的事件
+    for (int i = 0; i < eventCount; i++) {
+        int fd = eventItems[i].data.fd;
+        uint32_t epollEvents = eventItems[i].events;
+        if (fd == mWakeEventFd) {
+            if (epollEvents & EPOLLIN) {
+                awoken(); //已经唤醒了，则读取并清空管道数据【7】
+            }
+        } else {
+            ssize_t requestIndex = mRequests.indexOfKey(fd);
+            if (requestIndex >= 0) {
+                int events = 0;
+                if (epollEvents & EPOLLIN) events |= EVENT_INPUT;
+                if (epollEvents & EPOLLOUT) events |= EVENT_OUTPUT;
+                if (epollEvents & EPOLLERR) events |= EVENT_ERROR;
+                if (epollEvents & EPOLLHUP) events |= EVENT_HANGUP;
+                //处理request，生成对应的reponse对象，push到响应数组
+                pushResponse(events, mRequests.valueAt(requestIndex));
+            }
+        }
+    }
+Done: ;
+    //再处理Native的Message，调用相应回调方法
+    mNextMessageUptime = LLONG_MAX;
+    while (mMessageEnvelopes.size() != 0) {
+        nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);
+        const MessageEnvelope& messageEnvelope = mMessageEnvelopes.itemAt(0);
+        if (messageEnvelope.uptime <= now)="" {="" sp<messagehandler=""> handler = messageEnvelope.handler;
+                Message message = messageEnvelope.message;
+                mMessageEnvelopes.removeAt(0);
+                mSendingMessage = true;
+                mLock.unlock();  //释放锁
+                handler->handleMessage(message);  // 处理消息事件
+            }
+            mLock.lock();  //请求锁
+            mSendingMessage = false;
+            result = POLL_CALLBACK; // 发生回调
+        } else {
+            mNextMessageUptime = messageEnvelope.uptime;
+            break;
+        }
+    }
+    mLock.unlock(); //释放锁
+    //处理带有Callback()方法的Response事件，执行Reponse相应的回调方法
+    for (size_t i = 0; i < mResponses.size(); i++) {
+        Response& response = mResponses.editItemAt(i);
+        if (response.request.ident == POLL_CALLBACK) {
+            int fd = response.request.fd;
+            int events = response.events;
+            void* data = response.request.data;
+            // 处理请求的回调方法
+            int callbackResult = response.request.callback->handleEvent(fd, events, data);
+            if (callbackResult == 0) {
+                removeFd(fd, response.request.seq); //移除fd
+            }
+            response.request.callback.clear(); //清除reponse引用的回调方法
+            result = POLL_CALLBACK;  // 发生回调
+        }
+    }
+    return result;
+}
+</=></pre>
+
+<p>这里后面处理的message，是native层的消息，并不是java层发送的message。<br>具体代码如下：</p>
+<p><pre><br>void Looper::sendMessageAtTime(nsecs_t uptime, const sp<messagehandler>&amp; handler,<br>        const Message&amp; message) {<br>#if DEBUG_CALLBACKS<br>    ALOGD(“%p ~ sendMessageAtTime - uptime=%lld, handler=%p, what=%d”,<br>            this, uptime, handler.get(), message.what);<br>#endif<br>    size_t i = 0;<br>    { // acquire lock<br>        AutoMutex _l(mLock);<br>        size_t messageCount = mMessageEnvelopes.size();<br>        while (i &lt; messageCount &amp;&amp; uptime &gt;= mMessageEnvelopes.itemAt(i).uptime) {<br>            i += 1;<br>        }<br>        MessageEnvelope messageEnvelope(uptime, handler, message);<br>        mMessageEnvelopes.insertAt(messageEnvelope, i, 1);<br>        // Optimization: If the Looper is currently sending a message, then we can skip<br>        // the call to wake() because the next thing the Looper will do after processing<br>        // messages is to decide when the next wakeup time should be.  In fact, it does<br>        // not even matter whether this code is running on the Looper thread.<br>        if (mSendingMessage) {<br>            return;<br>        }<br>    } // release lock<br>    // Wake the poll loop only when we enqueue a new message at the head.<br>    if (i == 0) {<br>        wake();<br>    }<br>}<br></messagehandler></pre><br>这里会对mMessageEnvelopes队列进行插入message消息，属于native层的消息。</p>
+<h3 id="nativeWake"><a href="#nativeWake" class="headerlink" title="nativeWake()"></a>nativeWake()</h3><p>nativeWake用于唤醒功能，在添加消息到消息队列enqueueMessage(), 或者把消息从消息队列中全部移除quit()，再有需要时都会调用 nativeWake方法。包含唤醒过程的添加消息的调用链，如下：<br><img src="Handler-Looper-Message-0/native_wake.png" alt="nativeWake"></p>
+<p>最终会唤醒epoll_wait，进行消息的分发处理。</p>
+<p>###小结<br>本节介绍MessageQueue的native()方法，经过层层调用：</p>
+<p>nativeInit()方法，最终实现由epoll机制中的epoll_create()/epoll_ctl()完成；<br>nativeDestroy()方法，最终实现由RefBase::decStrong()完成；<br>nativePollOnce()方法，最终实现由Looper::pollOnce()完成；<br>nativeWake()方法，最终实现由Looper::wake()调用write方法，向管道写入字符；<br>nativeIsPolling()，nativeSetFileDescriptorEvents()这两个方法类似，</p>
+<p>##总结</p>
+<p>MessageQueue通过mPtr变量保存NativeMessageQueue对象，从而使得MessageQueue成为Java层和Native层的枢纽，既能处理上层消息，也能处理native层消息；下面列举Java层与Native层的对应图<br><img src="Handler-Looper-Message-0/handler_arch.png" alt="arch"></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="../../../03/30/tensorflow/" rel="next" title="tensorflow">
+                <i class="fa fa-chevron-left"></i> tensorflow
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="../user-hexo/" rel="prev" title="在 hexo 中使用本地图片">
+                在 hexo 中使用本地图片 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="../../../../images/avatar.gif"
+               alt="HHcola" />
+          <p class="site-author-name" itemprop="name">HHcola</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="../../../../archives">
+                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#概述："><span class="nav-number">1.</span> <span class="nav-text">概述：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#nativeWake"><span class="nav-number">1.0.1.</span> <span class="nav-text">nativeWake()</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">HHcola</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="../../../../lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="../../../../lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="../../../../lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="../../../../lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="../../../../lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="../../../../lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="../../../../js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="../../../../js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="../../../../js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="../../../../js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="../../../../js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,747 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="../../../../lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="../../../../lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="../../../../css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="../../../../favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="如何发现内存泄漏在android开发中，比如activity页面会占用许多资源开销，如果发生页面泄漏，对应用程序的内存占用很大，多应用程序的伤害也是很大的。
+那么如何发现内存泄漏？
+反复操作观察内存变化1.通过 DDMS 中的 heap 工具，可以查看应用内存的使用情况2.Android studio也可以方便查看
+通过代码检测Activity泄漏1）debug版本可以起一个长期工作的线程Leak">
+<meta property="og:type" content="article">
+<meta property="og:title" content="android内存泄漏分析">
+<meta property="og:url" content="http://HHcola.github.io/2017/04/10/android-memory-analyze/index.html">
+<meta property="og:site_name" content="HHcola">
+<meta property="og:description" content="如何发现内存泄漏在android开发中，比如activity页面会占用许多资源开销，如果发生页面泄漏，对应用程序的内存占用很大，多应用程序的伤害也是很大的。
+那么如何发现内存泄漏？
+反复操作观察内存变化1.通过 DDMS 中的 heap 工具，可以查看应用内存的使用情况2.Android studio也可以方便查看
+通过代码检测Activity泄漏1）debug版本可以起一个长期工作的线程Leak">
+<meta property="og:image" content="http://HHcola.github.io/android-memory-analyze/hprof.jpg">
+<meta property="og:image" content="http://HHcola.github.io/android-memory-analyze/5.jpg">
+<meta property="og:image" content="http://HHcola.github.io/android-memory-analyze/8.png">
+<meta property="og:image" content="http://HHcola.github.io/android-memory-analyze/10.png">
+<meta property="og:updated_time" content="2017-04-10T12:21:27.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="android内存泄漏分析">
+<meta name="twitter:description" content="如何发现内存泄漏在android开发中，比如activity页面会占用许多资源开销，如果发生页面泄漏，对应用程序的内存占用很大，多应用程序的伤害也是很大的。
+那么如何发现内存泄漏？
+反复操作观察内存变化1.通过 DDMS 中的 heap 工具，可以查看应用内存的使用情况2.Android studio也可以方便查看
+通过代码检测Activity泄漏1）debug版本可以起一个长期工作的线程Leak">
+<meta name="twitter:image" content="http://HHcola.github.io/android-memory-analyze/hprof.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://HHcola.github.io/2017/04/10/android-memory-analyze/"/>
+
+
+
+
+
+  <title> android内存泄漏分析 | HHcola </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">HHcola</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://HHcola.github.io">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="HHcola">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="../../../../images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="HHcola">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                android内存泄漏分析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-10T19:48:27+08:00">
+                2017-04-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="如何发现内存泄漏"><a href="#如何发现内存泄漏" class="headerlink" title="如何发现内存泄漏"></a>如何发现内存泄漏</h1><p>在android开发中，比如activity页面会占用许多资源开销，如果发生页面泄漏，对应用程序的内存占用很大，多应用程序的伤害也是很大的。</p>
+<p>那么如何发现内存泄漏？</p>
+<h2 id="反复操作观察内存变化"><a href="#反复操作观察内存变化" class="headerlink" title="反复操作观察内存变化"></a>反复操作观察内存变化</h2><p>1.通过 DDMS 中的 heap 工具，可以查看应用内存的使用情况<br>2.Android studio也可以方便查看</p>
+<h2 id="通过代码检测Activity泄漏"><a href="#通过代码检测Activity泄漏" class="headerlink" title="通过代码检测Activity泄漏"></a>通过代码检测Activity泄漏</h2><p>1）debug版本可以起一个长期工作的线程LeakThread在后台专门做泄漏检测</p>
+<p>2）向Application注册一个 页面生命周期 的监听：application.registerActivityLifecycleCallbacks</p>
+<p>3）在监听类中对 onActivityDestoryed(Activity activity) 的事件回调做处理：</p>
+<p>如果一个Activity走到onDestroy，那么这个Activity对象就是需要被回收的目标。</p>
+<p>我们声明一个检测对象的弱引用ref = new WeakReference<object>(activity)。</object></p>
+<p>PS：与强引用和软引用相比，弱引用不会被回收器当做一个“有效”的引用，不会影响其引用对象的释放。实际上，垃圾回收器会毫不犹豫地回收只有弱引用的对象~</p>
+<p>4）在 LeakThread中我们每隔一段时间检测一下ref.get() 是否为空，为空说明activity已被释放。不为空可以手动触一次发gc；如果超过一段时间，比如50s，页面对象还未被清理，我们可以推断内存泄漏的发生.</p>
+<p>5）当内存泄漏发生时，提示给开发者，并自动dump出.prof文件。</p>
+<h1 id="分析内存泄漏（DDMS-dump-MAT分析）"><a href="#分析内存泄漏（DDMS-dump-MAT分析）" class="headerlink" title="分析内存泄漏（DDMS dump + MAT分析）"></a>分析内存泄漏（DDMS dump + MAT分析）</h1><p>发现可能出现的内存泄漏时，我们需要对.prof文件进行分析。</p>
+<h2 id="如何dump出-prof文件？"><a href="#如何dump出-prof文件？" class="headerlink" title="如何dump出.prof文件？"></a>如何dump出.prof文件？</h2><ol>
+<li>Eclipse 通过ddms</li>
+<li>Android studio monitors</li>
+</ol>
+<h2 id="导出-prof文件后如何分析"><a href="#导出-prof文件后如何分析" class="headerlink" title="导出.prof文件后如何分析"></a>导出.prof文件后如何分析</h2><p>Android studio可以直接打开prof文件。点开Analyzer Tasks的面板，点击右上角的开始按钮。<br><img src="android-memory-analyze/hprof.jpg" alt="prof"><br>分析完成后，发生内存泄漏的页面对象会出现在Analysis Results面板-Leak Activityes的目录下。<br><img src="android-memory-analyze/5.jpg" alt="prof"></p>
+<h2 id="进一步分析泄漏的原因，你会需要一个好用的内存分析工具：MAT"><a href="#进一步分析泄漏的原因，你会需要一个好用的内存分析工具：MAT" class="headerlink" title="进一步分析泄漏的原因，你会需要一个好用的内存分析工具：MAT"></a>进一步分析泄漏的原因，你会需要一个好用的内存分析工具：MAT</h2><ol>
+<li>打开.hprof前可能遇到的问题：</li>
+</ol>
+<p>在MAT中打开.prof页面，你可能会遇到一点小挫折：<br>解决方案如下：</p>
+<p>Sdk安装目录下platform-tools里有一个hprof-conv工具可以解决该问题。在cmd控制台执行：</p>
+<p>hprof-conv input.hprof output.hprof</p>
+<ol>
+<li>打开.phrof文件后的分析</li>
+</ol>
+<p>通过MAT打开.phrof文件后，会弹出Overview 和 Leak Suspects 2个标签页。</p>
+<p>Leak Suspects标签页可见如下图：<br><img src="android-memory-analyze/8.png" alt="prof"><br>Leak Suspects视图展示了app内存占用的比例，浅色是空闲的内存，其他是内存占用的空间。每块内存对应的问题也都列在下面。点开每个Problem Suspect下的details，可以看到有哪些类的实例占用了内存和占用大小等信息~</p>
+<p>此时我们已经有了怀疑的目标，为了更清晰地查看，我们可以回到Overview页面，打开Histogram页面：<br><img src="android-memory-analyze/10.png" alt="prof"></p>
+<p>到这里就可以看出是哪个对象hold主了你的对象。</p>
+<h1 id="通过leakCanary检测内存泄漏"><a href="#通过leakCanary检测内存泄漏" class="headerlink" title="通过leakCanary检测内存泄漏"></a>通过leakCanary检测内存泄漏</h1><p>leakCanary是一个开源的工具，可以有效的监测内存泄漏</p>
+<h2 id="如何使用"><a href="#如何使用" class="headerlink" title="如何使用"></a>如何使用</h2><p>使用特别简单，在 Application 中</p>
+<pre>
+public class ExampleApplication extends Application {
+
+  @Override public void onCreate() {
+    super.onCreate();
+    LeakCanary.install(this);
+  }
+}
+</pre>
+
+<p>这样，就OK了！ 如果检测到某个 activity 有内存泄露，LeakCanary 就是自动地显示一个通知。</p>
+<h2 id="使用RefWatcher检测本该背回收的对象"><a href="#使用RefWatcher检测本该背回收的对象" class="headerlink" title="使用RefWatcher检测本该背回收的对象"></a>使用RefWatcher检测本该背回收的对象</h2><p>LeakCanary.install() 会返回一个预定义的 RefWatcher，同时也会启用一个 ActivityRefWatcher，用于自动监控调用 Activity.onDestroy() 之后泄露的 activity。</p>
+<pre>
+public class ExampleApplication extends Application {
+
+  public static RefWatcher getRefWatcher(Context context) {
+    ExampleApplication application = (ExampleApplication) context.getApplicationContext();
+    return application.refWatcher;
+  }
+
+  private RefWatcher refWatcher;
+
+  @Override public void onCreate() {
+    super.onCreate();
+    refWatcher = LeakCanary.install(this);
+  }
+}
+</pre>
+
+<p>使用 RefWatcher 监控 Fragment：</p>
+<pre>
+public abstract class BaseFragment extends Fragment {
+  @Override public void onDestroy() {
+    super.onDestroy();
+    RefWatcher refWatcher = ExampleApplication.getRefWatcher(getActivity());
+    refWatcher.watch(this);
+  }
+}
+</pre>
+
+<p>工作机制<br>RefWatcher.watch()<br>创建一个 KeyedWeakReference 到要被监控的对象。</p>
+<p>然后在后台线程检查引用是否被清除，如果没有，调用GC。</p>
+<p>如果引用还是未被清除，把 heap 内存 dump 到 APP 对应的文件系统中的一个.hprof文件。</p>
+<p>在另外一个进程中的HeapAnalyzerService<br>有一个HeapAnalyzer<br>使用HAHA 解析这个文件。</p>
+<p>得益于唯一的 reference key,HeapAnalyzer<br>找到KeyedWeakReference<br>，定位内存泄露。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="../Gson-Parse-One/" rel="next" title="Gson性能分析">
+                <i class="fa fa-chevron-left"></i> Gson性能分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="../LurCache/" rel="prev" title="LurCache">
+                LurCache <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="../../../../images/avatar.gif"
+               alt="HHcola" />
+          <p class="site-author-name" itemprop="name">HHcola</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="../../../../archives">
+                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#如何发现内存泄漏"><span class="nav-number">1.</span> <span class="nav-text">如何发现内存泄漏</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#反复操作观察内存变化"><span class="nav-number">1.1.</span> <span class="nav-text">反复操作观察内存变化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#通过代码检测Activity泄漏"><span class="nav-number">1.2.</span> <span class="nav-text">通过代码检测Activity泄漏</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#分析内存泄漏（DDMS-dump-MAT分析）"><span class="nav-number">2.</span> <span class="nav-text">分析内存泄漏（DDMS dump + MAT分析）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#如何dump出-prof文件？"><span class="nav-number">2.1.</span> <span class="nav-text">如何dump出.prof文件？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#导出-prof文件后如何分析"><span class="nav-number">2.2.</span> <span class="nav-text">导出.prof文件后如何分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进一步分析泄漏的原因，你会需要一个好用的内存分析工具：MAT"><span class="nav-number">2.3.</span> <span class="nav-text">进一步分析泄漏的原因，你会需要一个好用的内存分析工具：MAT</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#通过leakCanary检测内存泄漏"><span class="nav-number">3.</span> <span class="nav-text">通过leakCanary检测内存泄漏</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#如何使用"><span class="nav-number">3.1.</span> <span class="nav-text">如何使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用RefWatcher检测本该背回收的对象"><span class="nav-number">3.2.</span> <span class="nav-text">使用RefWatcher检测本该背回收的对象</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">HHcola</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="../../../../lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="../../../../lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="../../../../lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="../../../../lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="../../../../lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="../../../../lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="../../../../js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="../../../../js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="../../../../js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="../../../../js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="../../../../js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

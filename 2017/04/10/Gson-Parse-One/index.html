@@ -1,0 +1,888 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="../../../../lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="../../../../lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="../../../../css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="../../../../favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="前言TypeAdapter会比使用JsonSerializer和JsonDeserializer更加的高效，原理是怎么样的呢？性能提升明显吗？
+Gson性能分析首先来看看我们提供一个大一点的数据来论证下面一些方法的优缺点。 这里提供类LargeData.java,并分为四个部分进行内存消耗的分析：
+
+public class LargeData {
+
+  private long[] number">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Gson性能分析">
+<meta property="og:url" content="http://HHcola.github.io/2017/04/10/Gson-Parse-One/index.html">
+<meta property="og:site_name" content="HHcola">
+<meta property="og:description" content="前言TypeAdapter会比使用JsonSerializer和JsonDeserializer更加的高效，原理是怎么样的呢？性能提升明显吗？
+Gson性能分析首先来看看我们提供一个大一点的数据来论证下面一些方法的优缺点。 这里提供类LargeData.java,并分为四个部分进行内存消耗的分析：
+
+public class LargeData {
+
+  private long[] number">
+<meta property="og:image" content="http://HHcola.github.io/Gson-Parse-One/JsonSerializer.png">
+<meta property="og:image" content="http://HHcola.github.io/Gson-Parse-One/serializer-one.png">
+<meta property="og:image" content="http://HHcola.github.io/Gson-Parse-One/typeadapter-liu.png">
+<meta property="og:image" content="http://HHcola.github.io/Gson-Parse-One/typeadapter-liu-one.png">
+<meta property="og:updated_time" content="2017-04-10T12:22:20.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Gson性能分析">
+<meta name="twitter:description" content="前言TypeAdapter会比使用JsonSerializer和JsonDeserializer更加的高效，原理是怎么样的呢？性能提升明显吗？
+Gson性能分析首先来看看我们提供一个大一点的数据来论证下面一些方法的优缺点。 这里提供类LargeData.java,并分为四个部分进行内存消耗的分析：
+
+public class LargeData {
+
+  private long[] number">
+<meta name="twitter:image" content="http://HHcola.github.io/Gson-Parse-One/JsonSerializer.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://HHcola.github.io/2017/04/10/Gson-Parse-One/"/>
+
+
+
+
+
+  <title> Gson性能分析 | HHcola </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">HHcola</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://HHcola.github.io">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="HHcola">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="../../../../images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="HHcola">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Gson性能分析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-10T11:05:33+08:00">
+                2017-04-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>TypeAdapter会比使用JsonSerializer和JsonDeserializer更加的高效，原理是怎么样的呢？性能提升明显吗？</p>
+<h1 id="Gson性能分析"><a href="#Gson性能分析" class="headerlink" title="Gson性能分析"></a>Gson性能分析</h1><p>首先来看看我们提供一个大一点的数据来论证下面一些方法的优缺点。 这里提供类LargeData.java,并分为四个部分进行内存消耗的分析：</p>
+<pre>
+public class LargeData {
+
+  private long[] numbers;
+
+  public void create(final int length) {
+    numbers = new long[length];
+    for (int i = 0; i < length; i++) {
+      numbers[i] = i;
+    }
+  }
+
+  public long[] getNumbers() {
+    return numbers;
+  }
+
+}
+</pre>
+
+<h2 id="第1部分-JsonSerializer的直接使用"><a href="#第1部分-JsonSerializer的直接使用" class="headerlink" title="第1部分 JsonSerializer的直接使用"></a>第1部分 JsonSerializer的直接使用</h2><p>看看下面的JsonSerializer:</p>
+<pre>
+package com.javacreed.examples.gson.part1;
+
+import java.lang.reflect.Type;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+
+public class LargeDataSerialiser implements JsonSerializer<largedata> {
+
+  @Override
+  public JsonElement serialize(final LargeData data, final Type typeOfSrc, final JsonSerializationContext context) {
+    final JsonArray jsonNumbers = new JsonArray();
+    for (final long number : data.getNumbers()) {
+      jsonNumbers.add(new JsonPrimitive(number));
+    }
+    final JsonObject jsonObject = new JsonObject();
+    jsonObject.add("numbers", jsonNumbers);
+    return jsonObject;
+  }
+}
+</largedata></pre>
+
+<p>上面的代码实现了从java对象&gt;转化&gt;JSON数组的序列化过程。下面的代码实现了配置和初始化的过程，被写入文件。这里可以看到的是对LargeData初始化了10485760个元素：</p>
+<pre>
+package com.javacreed.examples.gson.part1;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+public class Main {
+  public static void main(final String[] args) throws IOException {
+    // Configure GSON
+    final GsonBuilder gsonBuilder = new GsonBuilder();
+    gsonBuilder.registerTypeAdapter(LargeData.class, new LargeDataSerialiser());
+    gsonBuilder.setPrettyPrinting();
+
+    final Gson gson = gsonBuilder.create();
+
+    final LargeData data = new LargeData();
+    data.create(10485760);
+
+    final String json = gson.toJson(data);
+
+    final File dir = new File("target/part1");
+    dir.mkdirs();
+
+    try (PrintStream out = new PrintStream(new File(dir, "output.json"), "UTF-8")) {
+      out.println(json);
+    }
+
+    System.out.println("Done");
+  }
+}
+</pre>
+
+
+<p>这个例子实现了创建java对象并且转化为JSON字符串并写入文件的整个过程。下面的图标展示了内存的消耗情况：</p>
+<p><img src="Gson-Parse-One/JsonSerializer.png" alt="ser"><br>上面的的LargeData在这里会消耗89MB的内存，从java对象转化为JSON字符串的过程将会消耗大概16s的时间并且需要超过1GB的内存。也就是说，序列化1MB的数据我们需要大约11MB的工作空间。1：11的确实是一个不小的比列。下面的 图片会展示整个过程的几个阶段。<br><img src="Gson-Parse-One/serializer-one.png" alt="ser"></p>
+<p>可以看到的是，这里有四个方块分别代表不同的阶段，（但是IO 缓冲区并没有在这里得到使用，所以以灰色进行标注。）整个过程从java对象（蓝色方块），然后由LargeDataSerialiser类创建的JSONElement对象（红色方块），然后这些临时的对象又被转化为JSON 字符串（绿色方块），上面的示例代码使用PrintStream将内容输出到文件中并没有使用任何缓冲区。</p>
+<p>完成了第1部分的分析，接下来下面的分析流程是一样的：</p>
+<h2 id="第2-部分-TypeAdapter的直接使用"><a href="#第2-部分-TypeAdapter的直接使用" class="headerlink" title="第2 部分 TypeAdapter的直接使用"></a>第2 部分 TypeAdapter的直接使用</h2><p>之前的系列文章中都对Gson基础的使用进行了很好的讲解，可以回顾一下。</p>
+<p>TypeAdapter相比 于上面的方法，并没有使用JSONElement对象，而是直接将Java对象啊转化为了JSON对象。</p>
+<pre>
+package com.javacreed.examples.gson.part2;
+
+import java.io.IOException;
+
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+
+public class LargeDataTypeAdapter extends TypeAdapter<largedata> {
+
+  @Override
+  public LargeData read(final JsonReader in) throws IOException {
+    throw new UnsupportedOperationException("Coming soon");
+  }
+
+  @Override
+  public void write(final JsonWriter out, final LargeData data) throws IOException {
+    out.beginObject();
+    out.name("numbers");
+    out.beginArray();
+    for (final long number : data.getNumbers()) {
+      out.value(number);
+    }
+    out.endArray();
+    out.endObject();
+  }
+}
+</largedata></pre>
+
+<p>同样会需要配置，这里主要使用的方法是<br>gsonBuilder.registerTypeAdapter(LargeData.class, new LargeDataTypeAdapter());</p>
+<pre>
+package com.javacreed.examples.gson.part2;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+public class Main {
+  public static void main(final String[] args) throws IOException {
+    // Configure GSON
+    final GsonBuilder gsonBuilder = new GsonBuilder();
+    gsonBuilder.registerTypeAdapter(LargeData.class, new LargeDataTypeAdapter());
+    gsonBuilder.setPrettyPrinting();
+
+    final Gson gson = gsonBuilder.create();
+
+    final LargeData data = new LargeData();
+    data.create(10485760);
+
+    final String json = gson.toJson(data);
+
+    final File dir = new File("target/part2");
+    dir.mkdirs();
+
+    try (PrintStream out = new PrintStream(new File(dir, "output.json"), "UTF-8")) {
+      out.println(json);
+    }
+
+    System.out.println("Done");
+  }
+}
+</pre>
+上面的代码完成的是从java对象 >转化>JSON 字符串并最终写入文件的过程。看看下面的性能分析图表：
+![ser](Gson-Parse-One/typeadapter.png)
+
+和最初的那个方法一样，这里的LargeData对象将会需要89MB的内存，从java对象转化为JSON字符串的过程需要消耗4s的时间，大概650MB的内存。也就是说，序列化1MB的数据，大概需要7.5MB的内存空间。相比于之前的第一种JsonSerializer方法，这里减少了接近一半的内存消耗。同样的，来看看这个方法的几个过程：
+![ser](Gson-Parse-One/typeadapter-one.png)
+
+这里的序列化过程主要有两个阶段，相比于之前的JSONSerializer的序列化过程，这里没有了转化为JSONElement的过程，也就完成了内存消耗的减少。
+
+##第3部分 TypeAdapter的流式处理
+下面的代码，我们使用上面同样的TypeAdapter，只不过我们直接在main()方法中修改Gson的用法，以流的形式进行输出。
+
+<pre>
+package com.javacreed.examples.gson.part3;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+public class Main {
+  public static void main(final String[] args) throws IOException {
+    // Configure GSON
+    final GsonBuilder gsonBuilder = new GsonBuilder();
+    gsonBuilder.registerTypeAdapter(LargeData.class, new LargeDataTypeAdapter());
+    gsonBuilder.setPrettyPrinting();
+
+    final Gson gson = gsonBuilder.create();
+
+    final LargeData data = new LargeData();
+    data.create(10485760);
+
+    final File dir = new File("target/part3");
+    dir.mkdirs();
+
+    try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(dir,
+        "output.json")), "UTF-8"))) {
+      gson.toJson(data, out);
+    }
+
+    System.out.println("Done");
+  }
+}
+</pre>
+
+<p>这个例子同样是将java对象转化为JSON字符串并且输出，也来看看下面的性能分析图表：<br><img src="Gson-Parse-One/typeadapter-liu.png" alt="ser"><br>可以看到的是同样的最初产生的数据是89MB,序列化过程将java对象转化为JSON字符串花了大概三秒钟的时间，消耗大概160MB的内存。也就是说序列化1MB的数据我们需要大概2MB的内存空间。相比于之前的两种方法，有了很大的改进。<br><img src="Gson-Parse-One/typeadapter-liu-one.png" alt="ser"></p>
+<p>TypeAdapter-with-Stream-Stages<br>这个方法同样的是使用了两个阶段。不过在上面一个示例中的绿色方块部分在这里没有使用，这里直接完成了java对象到IO 缓冲区的转化并写入文件。</p>
+<p>虽然这里并不是Gson的关系，但是我们使用Gson的方法极大的减少了内存消耗，所以说在使用开源库的时候，能够正确高效的使用API也显得尤为重要。</p>
+<h1 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h1><p>在上面的分析过程中，我们采用了GSON的两种不同的方然完成了序列化一个大数据的过程，并且比较了不同的方法之间的差异。上面的第三种方法（TypeAdapter的流式处理）被论证为最合适的，消耗最少内存的一种方法。</p>
+<p>Gson主要分成两部分,一个就是数据拆解,一个是数据封装</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="../../09/hexo/" rel="next" title="hexo 使用指南">
+                <i class="fa fa-chevron-left"></i> hexo 使用指南
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="../android-memory-analyze/" rel="prev" title="android内存泄漏分析">
+                android内存泄漏分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="../../../../images/avatar.gif"
+               alt="HHcola" />
+          <p class="site-author-name" itemprop="name">HHcola</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="../../../../archives">
+                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Gson性能分析"><span class="nav-number">2.</span> <span class="nav-text">Gson性能分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#第1部分-JsonSerializer的直接使用"><span class="nav-number">2.1.</span> <span class="nav-text">第1部分 JsonSerializer的直接使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#第2-部分-TypeAdapter的直接使用"><span class="nav-number">2.2.</span> <span class="nav-text">第2 部分 TypeAdapter的直接使用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#结论"><span class="nav-number">3.</span> <span class="nav-text">结论</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">HHcola</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="../../../../lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="../../../../lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="../../../../lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="../../../../lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="../../../../lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="../../../../lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="../../../../js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="../../../../js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="../../../../js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="../../../../js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="../../../../js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
