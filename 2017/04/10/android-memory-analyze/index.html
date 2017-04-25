@@ -99,10 +99,10 @@
 那么如何发现内存泄漏？
 反复操作观察内存变化1.通过 DDMS 中的 heap 工具，可以查看应用内存的使用情况2.Android studio也可以方便查看
 通过代码检测Activity泄漏1）debug版本可以起一个长期工作的线程Leak">
-<meta property="og:image" content="http://HHcola.github.io/android-memory-analyze/hprof.jpg">
-<meta property="og:image" content="http://HHcola.github.io/android-memory-analyze/5.jpg">
-<meta property="og:image" content="http://HHcola.github.io/android-memory-analyze/8.png">
-<meta property="og:image" content="http://HHcola.github.io/android-memory-analyze/10.png">
+<meta property="og:image" content="http://HHcola.github.io/2017/04/10/android-memory-analyze/hprof.jpg">
+<meta property="og:image" content="http://HHcola.github.io/2017/04/10/android-memory-analyze/5.jpg">
+<meta property="og:image" content="http://HHcola.github.io/2017/04/10/android-memory-analyze/8.png">
+<meta property="og:image" content="http://HHcola.github.io/2017/04/10/android-memory-analyze/10.png">
 <meta property="og:updated_time" content="2017-04-10T12:21:27.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="android内存泄漏分析">
@@ -110,7 +110,7 @@
 那么如何发现内存泄漏？
 反复操作观察内存变化1.通过 DDMS 中的 heap 工具，可以查看应用内存的使用情况2.Android studio也可以方便查看
 通过代码检测Activity泄漏1）debug版本可以起一个长期工作的线程Leak">
-<meta name="twitter:image" content="http://HHcola.github.io/android-memory-analyze/hprof.jpg">
+<meta name="twitter:image" content="http://HHcola.github.io/2017/04/10/android-memory-analyze/hprof.jpg">
 
 
 
@@ -351,7 +351,7 @@
 <li>Eclipse 通过ddms</li>
 <li>Android studio monitors</li>
 </ol>
-<h2 id="导出-prof文件后如何分析"><a href="#导出-prof文件后如何分析" class="headerlink" title="导出.prof文件后如何分析"></a>导出.prof文件后如何分析</h2><p>Android studio可以直接打开prof文件。点开Analyzer Tasks的面板，点击右上角的开始按钮。<br><img src="android-memory-analyze/hprof.jpg" alt="prof"><br>分析完成后，发生内存泄漏的页面对象会出现在Analysis Results面板-Leak Activityes的目录下。<br><img src="android-memory-analyze/5.jpg" alt="prof"></p>
+<h2 id="导出-prof文件后如何分析"><a href="#导出-prof文件后如何分析" class="headerlink" title="导出.prof文件后如何分析"></a>导出.prof文件后如何分析</h2><p>Android studio可以直接打开prof文件。点开Analyzer Tasks的面板，点击右上角的开始按钮。<br><img src="/2017/04/10/android-memory-analyze/hprof.jpg" alt="prof"><br>分析完成后，发生内存泄漏的页面对象会出现在Analysis Results面板-Leak Activityes的目录下。<br><img src="/2017/04/10/android-memory-analyze/5.jpg" alt="prof"></p>
 <h2 id="进一步分析泄漏的原因，你会需要一个好用的内存分析工具：MAT"><a href="#进一步分析泄漏的原因，你会需要一个好用的内存分析工具：MAT" class="headerlink" title="进一步分析泄漏的原因，你会需要一个好用的内存分析工具：MAT"></a>进一步分析泄漏的原因，你会需要一个好用的内存分析工具：MAT</h2><ol>
 <li>打开.hprof前可能遇到的问题：</li>
 </ol>
@@ -362,8 +362,8 @@
 <li>打开.phrof文件后的分析</li>
 </ol>
 <p>通过MAT打开.phrof文件后，会弹出Overview 和 Leak Suspects 2个标签页。</p>
-<p>Leak Suspects标签页可见如下图：<br><img src="android-memory-analyze/8.png" alt="prof"><br>Leak Suspects视图展示了app内存占用的比例，浅色是空闲的内存，其他是内存占用的空间。每块内存对应的问题也都列在下面。点开每个Problem Suspect下的details，可以看到有哪些类的实例占用了内存和占用大小等信息~</p>
-<p>此时我们已经有了怀疑的目标，为了更清晰地查看，我们可以回到Overview页面，打开Histogram页面：<br><img src="android-memory-analyze/10.png" alt="prof"></p>
+<p>Leak Suspects标签页可见如下图：<br><img src="/2017/04/10/android-memory-analyze/8.png" alt="prof"><br>Leak Suspects视图展示了app内存占用的比例，浅色是空闲的内存，其他是内存占用的空间。每块内存对应的问题也都列在下面。点开每个Problem Suspect下的details，可以看到有哪些类的实例占用了内存和占用大小等信息~</p>
+<p>此时我们已经有了怀疑的目标，为了更清晰地查看，我们可以回到Overview页面，打开Histogram页面：<br><img src="/2017/04/10/android-memory-analyze/10.png" alt="prof"></p>
 <p>到这里就可以看出是哪个对象hold主了你的对象。</p>
 <h1 id="通过leakCanary检测内存泄漏"><a href="#通过leakCanary检测内存泄漏" class="headerlink" title="通过leakCanary检测内存泄漏"></a>通过leakCanary检测内存泄漏</h1><p>leakCanary是一个开源的工具，可以有效的监测内存泄漏</p>
 <h2 id="如何使用"><a href="#如何使用" class="headerlink" title="如何使用"></a>如何使用</h2><p>使用特别简单，在 Application 中</p>

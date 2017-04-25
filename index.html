@@ -270,7 +270,7 @@
               
                 
                 <a class="post-title-link" href="2017/04/17/thread-communication/" itemprop="url">
-                  thread-communication
+                  线程间通讯方式
                 </a>
               
             
@@ -1141,7 +1141,7 @@ Java对于eqauls方法和hashCode方法是这样规定的：
         
           
             <h1 id="java数据类型"><a href="#java数据类型" class="headerlink" title="java数据类型"></a>java数据类型</h1><p>java语言是对象的天下，对象通过new关键字创建，并保存在堆中，通过堆栈中的引用使用这些对象，需要占用一定的空间。对于常用的数据类型，这么做未免太复杂，所以产生了常用的基本类型。</p>
-<p>下图展示了基本数据类型，以及占用空间大小，优于和机器硬件架构无关，所以可移植性比较强。<br><img src="java-android-knowledge-one/data-style.jpg" alt="style"></p>
+<p>下图展示了基本数据类型，以及占用空间大小，优于和机器硬件架构无关，所以可移植性比较强。<br><img src="/2017/04/13/java-android-knowledge-one/data-style.jpg" alt="style"></p>
 <p>为何有包装数据类型？<br>java是面向对象的语言，为了和其他对象兼容，产生了包装类型，比如在Collection时会使用这些包装类型。</p>
 <h1 id="java装箱和拆箱"><a href="#java装箱和拆箱" class="headerlink" title="java装箱和拆箱"></a>java装箱和拆箱</h1><p>这里说的装箱和拆箱是针对基本类型到包装类型的转换.<br>比如:</p>
 <pre>
@@ -1472,7 +1472,7 @@ System.out.printf("\nresult = %d \n", result);
       
         
           
-            <h1 id="java-运算符优先级"><a href="#java-运算符优先级" class="headerlink" title="java 运算符优先级"></a>java 运算符优先级</h1><p>　<pre><br>　int i = 3;<br>　int result = i +++ i &lt;&lt; 2;<br>　</pre><br>　<br>　result = ?<br>　<br>　这个题目考察最基本的运算符优先级，其中包含3个运算符：＋＋，＋， &lt;&lt;<br>　关键一点：＋＋＋，这个怎么拆解，要根据优先级进行判断，下面图中给出了基本的优先级。<br>　<br><img src="java-android-基础知识/yunsuanfu.png" alt="op"></p>
+            <h1 id="java-运算符优先级"><a href="#java-运算符优先级" class="headerlink" title="java 运算符优先级"></a>java 运算符优先级</h1><p>　<pre><br>　int i = 3;<br>　int result = i +++ i &lt;&lt; 2;<br>　</pre><br>　<br>　result = ?<br>　<br>　这个题目考察最基本的运算符优先级，其中包含3个运算符：＋＋，＋， &lt;&lt;<br>　关键一点：＋＋＋，这个怎么拆解，要根据优先级进行判断，下面图中给出了基本的优先级。<br>　<br><img src="/2017/04/12/java-android-基础知识/yunsuanfu.png" alt="op"></p>
 <p>可以用一个口诀来记忆：单目乘除为关系，逻辑三目后赋值。</p>
 <pre>
 单目：单目运算符+ –(负数) ++ -- 等 
@@ -1653,7 +1653,7 @@ public class LruCache<k, v=""> {
 
 <p>其中用到的数据对象是LinkedHashMap，所以不要把这个类想的多么深不可测，还是数据结构 + 算法。既然用到了这个map，自然就要有添加修改和删除操作了，用到了最近最少使用算法，自然就要用到优先级了。</p>
 <h1 id="LinkedHashMap-Lru算法"><a href="#LinkedHashMap-Lru算法" class="headerlink" title="LinkedHashMap Lru算法"></a>LinkedHashMap Lru算法</h1><p>LRU算法是LinkedHashMap本身通过双向链表来实现，当某个位置被使用(例如get操作)，通过调整链表的指向将该位置调整到头位置， 新加入的内容直接放在链表头，如此一来，最近被使用的内容就向链表头移动，需要替换时(已经达到容量时)，链表最后的位置就是最近最少使用的位置。</p>
-<p><img src="LurCache/linkedhash.png" alt="map"></p>
+<p><img src="/2017/04/10/LurCache/linkedhash.png" alt="map"></p>
 
           
         
@@ -1790,7 +1790,7 @@ public class LruCache<k, v=""> {
 <li>Eclipse 通过ddms</li>
 <li>Android studio monitors</li>
 </ol>
-<h2 id="导出-prof文件后如何分析"><a href="#导出-prof文件后如何分析" class="headerlink" title="导出.prof文件后如何分析"></a>导出.prof文件后如何分析</h2><p>Android studio可以直接打开prof文件。点开Analyzer Tasks的面板，点击右上角的开始按钮。<br><img src="android-memory-analyze/hprof.jpg" alt="prof"><br>分析完成后，发生内存泄漏的页面对象会出现在Analysis Results面板-Leak Activityes的目录下。<br><img src="android-memory-analyze/5.jpg" alt="prof"></p>
+<h2 id="导出-prof文件后如何分析"><a href="#导出-prof文件后如何分析" class="headerlink" title="导出.prof文件后如何分析"></a>导出.prof文件后如何分析</h2><p>Android studio可以直接打开prof文件。点开Analyzer Tasks的面板，点击右上角的开始按钮。<br><img src="/2017/04/10/android-memory-analyze/hprof.jpg" alt="prof"><br>分析完成后，发生内存泄漏的页面对象会出现在Analysis Results面板-Leak Activityes的目录下。<br><img src="/2017/04/10/android-memory-analyze/5.jpg" alt="prof"></p>
 <h2 id="进一步分析泄漏的原因，你会需要一个好用的内存分析工具：MAT"><a href="#进一步分析泄漏的原因，你会需要一个好用的内存分析工具：MAT" class="headerlink" title="进一步分析泄漏的原因，你会需要一个好用的内存分析工具：MAT"></a>进一步分析泄漏的原因，你会需要一个好用的内存分析工具：MAT</h2><ol>
 <li>打开.hprof前可能遇到的问题：</li>
 </ol>
@@ -1801,8 +1801,8 @@ public class LruCache<k, v=""> {
 <li>打开.phrof文件后的分析</li>
 </ol>
 <p>通过MAT打开.phrof文件后，会弹出Overview 和 Leak Suspects 2个标签页。</p>
-<p>Leak Suspects标签页可见如下图：<br><img src="android-memory-analyze/8.png" alt="prof"><br>Leak Suspects视图展示了app内存占用的比例，浅色是空闲的内存，其他是内存占用的空间。每块内存对应的问题也都列在下面。点开每个Problem Suspect下的details，可以看到有哪些类的实例占用了内存和占用大小等信息~</p>
-<p>此时我们已经有了怀疑的目标，为了更清晰地查看，我们可以回到Overview页面，打开Histogram页面：<br><img src="android-memory-analyze/10.png" alt="prof"></p>
+<p>Leak Suspects标签页可见如下图：<br><img src="/2017/04/10/android-memory-analyze/8.png" alt="prof"><br>Leak Suspects视图展示了app内存占用的比例，浅色是空闲的内存，其他是内存占用的空间。每块内存对应的问题也都列在下面。点开每个Problem Suspect下的details，可以看到有哪些类的实例占用了内存和占用大小等信息~</p>
+<p>此时我们已经有了怀疑的目标，为了更清晰地查看，我们可以回到Overview页面，打开Histogram页面：<br><img src="/2017/04/10/android-memory-analyze/10.png" alt="prof"></p>
 <p>到这里就可以看出是哪个对象hold主了你的对象。</p>
 <h1 id="通过leakCanary检测内存泄漏"><a href="#通过leakCanary检测内存泄漏" class="headerlink" title="通过leakCanary检测内存泄漏"></a>通过leakCanary检测内存泄漏</h1><p>leakCanary是一个开源的工具，可以有效的监测内存泄漏</p>
 <h2 id="如何使用"><a href="#如何使用" class="headerlink" title="如何使用"></a>如何使用</h2><p>使用特别简单，在 Application 中</p>

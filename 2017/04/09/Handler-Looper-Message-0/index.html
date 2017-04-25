@@ -103,12 +103,12 @@ class LooperThread extends Thread {
 
 class LooperThread extends Thread {
     public Handler mHandler;">
-<meta property="og:image" content="http://HHcola.github.io/Handler-Looper-Message-0/message-java.jpg">
-<meta property="og:image" content="http://HHcola.github.io/Handler-Looper-Message-0/java_sendmessage.png">
-<meta property="og:image" content="http://HHcola.github.io/Handler-Looper-Message-0/message-looper.jpg">
-<meta property="og:image" content="http://HHcola.github.io/Handler-Looper-Message-0/native_init.png">
-<meta property="og:image" content="http://HHcola.github.io/Handler-Looper-Message-0/native_wake.png">
-<meta property="og:image" content="http://HHcola.github.io/Handler-Looper-Message-0/handler_arch.png">
+<meta property="og:image" content="http://HHcola.github.io/2017/04/09/Handler-Looper-Message-0/message-java.jpg">
+<meta property="og:image" content="http://HHcola.github.io/2017/04/09/Handler-Looper-Message-0/java_sendmessage.png">
+<meta property="og:image" content="http://HHcola.github.io/2017/04/09/Handler-Looper-Message-0/message-looper.jpg">
+<meta property="og:image" content="http://HHcola.github.io/2017/04/09/Handler-Looper-Message-0/native_init.png">
+<meta property="og:image" content="http://HHcola.github.io/2017/04/09/Handler-Looper-Message-0/native_wake.png">
+<meta property="og:image" content="http://HHcola.github.io/2017/04/09/Handler-Looper-Message-0/handler_arch.png">
 <meta property="og:updated_time" content="2017-04-08T18:07:56.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Handler-Looper-Message">
@@ -118,7 +118,7 @@ class LooperThread extends Thread {
 
 class LooperThread extends Thread {
     public Handler mHandler;">
-<meta name="twitter:image" content="http://HHcola.github.io/Handler-Looper-Message-0/message-java.jpg">
+<meta name="twitter:image" content="http://HHcola.github.io/2017/04/09/Handler-Looper-Message-0/message-java.jpg">
 
 
 
@@ -344,7 +344,7 @@ class LooperThread extends Thread {
 
       
         <h1 id="概述："><a href="#概述：" class="headerlink" title="概述："></a>概述：</h1><p>Handler、Looper、Message可谓android中最基本的消息处理机制，但是要理清这三者关系需要一定的研究。本文从java层和native层深入探讨一下这里面的关系。</p>
-<p>##Java层理解<br>Native层关系图：<br><img src="Handler-Looper-Message-0/message-java.jpg" alt="关系图"></p>
+<p>##Java层理解<br>Native层关系图：<br><img src="/2017/04/09/Handler-Looper-Message-0/message-java.jpg" alt="关系图"></p>
 <p>###实例<br>先展示一个典型的例子：</p>
 <pre>
 class LooperThread extends Thread {
@@ -361,8 +361,8 @@ class LooperThread extends Thread {
 }
 </pre>
 
-<p>###消息发送图：<br><img src="Handler-Looper-Message-0/java_sendmessage.png" alt="消息图"></p>
-<p>###消息流程图：<br><img src="Handler-Looper-Message-0/message-looper.jpg" alt="流程图"></p>
+<p>###消息发送图：<br><img src="/2017/04/09/Handler-Looper-Message-0/java_sendmessage.png" alt="消息图"></p>
+<p>###消息流程图：<br><img src="/2017/04/09/Handler-Looper-Message-0/message-looper.jpg" alt="流程图"></p>
 <p>图解：</p>
 <p>####Handler通过sendMessage()发送Message到MessageQueue队列；</p>
 <p>####Looper通过loop()，不断提取出达到触发条件的Message，并将Message交给target来处理；</p>
@@ -409,7 +409,7 @@ private native static void nativeSetFileDescriptorEvents(long ptr, int fd, int e
 </pre>
 
 <p>初始化过程的调用链如下：</p>
-<p><img src="Handler-Looper-Message-0/native_init.png" alt="init"><br>其中epoll_create/epoll_ctl源码如下：</p>
+<p><img src="/2017/04/09/Handler-Looper-Message-0/native_init.png" alt="init"><br>其中epoll_create/epoll_ctl源码如下：</p>
 <pre>
 void Looper::rebuildEpollLocked() {
     if (mEpollFd >= 0) {
@@ -530,12 +530,12 @@ Done: ;
 
 <p>这里后面处理的message，是native层的消息，并不是java层发送的message。<br>具体代码如下：</p>
 <p><pre><br>void Looper::sendMessageAtTime(nsecs_t uptime, const sp<messagehandler>&amp; handler,<br>        const Message&amp; message) {<br>#if DEBUG_CALLBACKS<br>    ALOGD(“%p ~ sendMessageAtTime - uptime=%lld, handler=%p, what=%d”,<br>            this, uptime, handler.get(), message.what);<br>#endif<br>    size_t i = 0;<br>    { // acquire lock<br>        AutoMutex _l(mLock);<br>        size_t messageCount = mMessageEnvelopes.size();<br>        while (i &lt; messageCount &amp;&amp; uptime &gt;= mMessageEnvelopes.itemAt(i).uptime) {<br>            i += 1;<br>        }<br>        MessageEnvelope messageEnvelope(uptime, handler, message);<br>        mMessageEnvelopes.insertAt(messageEnvelope, i, 1);<br>        // Optimization: If the Looper is currently sending a message, then we can skip<br>        // the call to wake() because the next thing the Looper will do after processing<br>        // messages is to decide when the next wakeup time should be.  In fact, it does<br>        // not even matter whether this code is running on the Looper thread.<br>        if (mSendingMessage) {<br>            return;<br>        }<br>    } // release lock<br>    // Wake the poll loop only when we enqueue a new message at the head.<br>    if (i == 0) {<br>        wake();<br>    }<br>}<br></messagehandler></pre><br>这里会对mMessageEnvelopes队列进行插入message消息，属于native层的消息。</p>
-<h3 id="nativeWake"><a href="#nativeWake" class="headerlink" title="nativeWake()"></a>nativeWake()</h3><p>nativeWake用于唤醒功能，在添加消息到消息队列enqueueMessage(), 或者把消息从消息队列中全部移除quit()，再有需要时都会调用 nativeWake方法。包含唤醒过程的添加消息的调用链，如下：<br><img src="Handler-Looper-Message-0/native_wake.png" alt="nativeWake"></p>
+<h3 id="nativeWake"><a href="#nativeWake" class="headerlink" title="nativeWake()"></a>nativeWake()</h3><p>nativeWake用于唤醒功能，在添加消息到消息队列enqueueMessage(), 或者把消息从消息队列中全部移除quit()，再有需要时都会调用 nativeWake方法。包含唤醒过程的添加消息的调用链，如下：<br><img src="/2017/04/09/Handler-Looper-Message-0/native_wake.png" alt="nativeWake"></p>
 <p>最终会唤醒epoll_wait，进行消息的分发处理。</p>
 <p>###小结<br>本节介绍MessageQueue的native()方法，经过层层调用：</p>
 <p>nativeInit()方法，最终实现由epoll机制中的epoll_create()/epoll_ctl()完成；<br>nativeDestroy()方法，最终实现由RefBase::decStrong()完成；<br>nativePollOnce()方法，最终实现由Looper::pollOnce()完成；<br>nativeWake()方法，最终实现由Looper::wake()调用write方法，向管道写入字符；<br>nativeIsPolling()，nativeSetFileDescriptorEvents()这两个方法类似，</p>
 <p>##总结</p>
-<p>MessageQueue通过mPtr变量保存NativeMessageQueue对象，从而使得MessageQueue成为Java层和Native层的枢纽，既能处理上层消息，也能处理native层消息；下面列举Java层与Native层的对应图<br><img src="Handler-Looper-Message-0/handler_arch.png" alt="arch"></p>
+<p>MessageQueue通过mPtr变量保存NativeMessageQueue对象，从而使得MessageQueue成为Java层和Native层的枢纽，既能处理上层消息，也能处理native层消息；下面列举Java层与Native层的对应图<br><img src="/2017/04/09/Handler-Looper-Message-0/handler_arch.png" alt="arch"></p>
 
       
     </div>

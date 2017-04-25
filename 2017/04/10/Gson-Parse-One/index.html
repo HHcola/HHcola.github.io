@@ -103,10 +103,10 @@ Gson性能分析首先来看看我们提供一个大一点的数据来论证下�
 public class LargeData {
 
   private long[] number">
-<meta property="og:image" content="http://HHcola.github.io/Gson-Parse-One/JsonSerializer.png">
-<meta property="og:image" content="http://HHcola.github.io/Gson-Parse-One/serializer-one.png">
-<meta property="og:image" content="http://HHcola.github.io/Gson-Parse-One/typeadapter-liu.png">
-<meta property="og:image" content="http://HHcola.github.io/Gson-Parse-One/typeadapter-liu-one.png">
+<meta property="og:image" content="http://HHcola.github.io/2017/04/10/Gson-Parse-One/JsonSerializer.png">
+<meta property="og:image" content="http://HHcola.github.io/2017/04/10/Gson-Parse-One/serializer-one.png">
+<meta property="og:image" content="http://HHcola.github.io/2017/04/10/Gson-Parse-One/typeadapter-liu.png">
+<meta property="og:image" content="http://HHcola.github.io/2017/04/10/Gson-Parse-One/typeadapter-liu-one.png">
 <meta property="og:updated_time" content="2017-04-10T12:22:20.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Gson性能分析">
@@ -116,7 +116,7 @@ Gson性能分析首先来看看我们提供一个大一点的数据来论证下�
 public class LargeData {
 
   private long[] number">
-<meta name="twitter:image" content="http://HHcola.github.io/Gson-Parse-One/JsonSerializer.png">
+<meta name="twitter:image" content="http://HHcola.github.io/2017/04/10/Gson-Parse-One/JsonSerializer.png">
 
 
 
@@ -429,7 +429,7 @@ public class Main {
 
 
 <p>这个例子实现了创建java对象并且转化为JSON字符串并写入文件的整个过程。下面的图标展示了内存的消耗情况：</p>
-<p><img src="Gson-Parse-One/JsonSerializer.png" alt="ser"><br>上面的的LargeData在这里会消耗89MB的内存，从java对象转化为JSON字符串的过程将会消耗大概16s的时间并且需要超过1GB的内存。也就是说，序列化1MB的数据我们需要大约11MB的工作空间。1：11的确实是一个不小的比列。下面的 图片会展示整个过程的几个阶段。<br><img src="Gson-Parse-One/serializer-one.png" alt="ser"></p>
+<p><img src="/2017/04/10/Gson-Parse-One/JsonSerializer.png" alt="ser"><br>上面的的LargeData在这里会消耗89MB的内存，从java对象转化为JSON字符串的过程将会消耗大概16s的时间并且需要超过1GB的内存。也就是说，序列化1MB的数据我们需要大约11MB的工作空间。1：11的确实是一个不小的比列。下面的 图片会展示整个过程的几个阶段。<br><img src="/2017/04/10/Gson-Parse-One/serializer-one.png" alt="ser"></p>
 <p>可以看到的是，这里有四个方块分别代表不同的阶段，（但是IO 缓冲区并没有在这里得到使用，所以以灰色进行标注。）整个过程从java对象（蓝色方块），然后由LargeDataSerialiser类创建的JSONElement对象（红色方块），然后这些临时的对象又被转化为JSON 字符串（绿色方块），上面的示例代码使用PrintStream将内容输出到文件中并没有使用任何缓冲区。</p>
 <p>完成了第1部分的分析，接下来下面的分析流程是一样的：</p>
 <h2 id="第2-部分-TypeAdapter的直接使用"><a href="#第2-部分-TypeAdapter的直接使用" class="headerlink" title="第2 部分 TypeAdapter的直接使用"></a>第2 部分 TypeAdapter的直接使用</h2><p>之前的系列文章中都对Gson基础的使用进行了很好的讲解，可以回顾一下。</p>
@@ -548,7 +548,7 @@ public class Main {
 }
 </pre>
 
-<p>这个例子同样是将java对象转化为JSON字符串并且输出，也来看看下面的性能分析图表：<br><img src="Gson-Parse-One/typeadapter-liu.png" alt="ser"><br>可以看到的是同样的最初产生的数据是89MB,序列化过程将java对象转化为JSON字符串花了大概三秒钟的时间，消耗大概160MB的内存。也就是说序列化1MB的数据我们需要大概2MB的内存空间。相比于之前的两种方法，有了很大的改进。<br><img src="Gson-Parse-One/typeadapter-liu-one.png" alt="ser"></p>
+<p>这个例子同样是将java对象转化为JSON字符串并且输出，也来看看下面的性能分析图表：<br><img src="/2017/04/10/Gson-Parse-One/typeadapter-liu.png" alt="ser"><br>可以看到的是同样的最初产生的数据是89MB,序列化过程将java对象转化为JSON字符串花了大概三秒钟的时间，消耗大概160MB的内存。也就是说序列化1MB的数据我们需要大概2MB的内存空间。相比于之前的两种方法，有了很大的改进。<br><img src="/2017/04/10/Gson-Parse-One/typeadapter-liu-one.png" alt="ser"></p>
 <p>TypeAdapter-with-Stream-Stages<br>这个方法同样的是使用了两个阶段。不过在上面一个示例中的绿色方块部分在这里没有使用，这里直接完成了java对象到IO 缓冲区的转化并写入文件。</p>
 <p>虽然这里并不是Gson的关系，但是我们使用Gson的方法极大的减少了内存消耗，所以说在使用开源库的时候，能够正确高效的使用API也显得尤为重要。</p>
 <h1 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h1><p>在上面的分析过程中，我们采用了GSON的两种不同的方然完成了序列化一个大数据的过程，并且比较了不同的方法之间的差异。上面的第三种方法（TypeAdapter的流式处理）被论证为最合适的，消耗最少内存的一种方法。</p>

@@ -412,7 +412,7 @@ public class Main {
 
 
 <p>这个例子实现了创建java对象并且转化为JSON字符串并写入文件的整个过程。下面的图标展示了内存的消耗情况：</p>
-<p><img src="Gson-Parse-One/JsonSerializer.png" alt="ser"><br>上面的的LargeData在这里会消耗89MB的内存，从java对象转化为JSON字符串的过程将会消耗大概16s的时间并且需要超过1GB的内存。也就是说，序列化1MB的数据我们需要大约11MB的工作空间。1：11的确实是一个不小的比列。下面的 图片会展示整个过程的几个阶段。<br><img src="Gson-Parse-One/serializer-one.png" alt="ser"></p>
+<p><img src="/2017/04/10/Gson-Parse-One/JsonSerializer.png" alt="ser"><br>上面的的LargeData在这里会消耗89MB的内存，从java对象转化为JSON字符串的过程将会消耗大概16s的时间并且需要超过1GB的内存。也就是说，序列化1MB的数据我们需要大约11MB的工作空间。1：11的确实是一个不小的比列。下面的 图片会展示整个过程的几个阶段。<br><img src="/2017/04/10/Gson-Parse-One/serializer-one.png" alt="ser"></p>
 <p>可以看到的是，这里有四个方块分别代表不同的阶段，（但是IO 缓冲区并没有在这里得到使用，所以以灰色进行标注。）整个过程从java对象（蓝色方块），然后由LargeDataSerialiser类创建的JSONElement对象（红色方块），然后这些临时的对象又被转化为JSON 字符串（绿色方块），上面的示例代码使用PrintStream将内容输出到文件中并没有使用任何缓冲区。</p>
 <p>完成了第1部分的分析，接下来下面的分析流程是一样的：</p>
 <h2 id="第2-部分-TypeAdapter的直接使用"><a href="#第2-部分-TypeAdapter的直接使用" class="headerlink" title="第2 部分 TypeAdapter的直接使用"></a>第2 部分 TypeAdapter的直接使用</h2><p>之前的系列文章中都对Gson基础的使用进行了很好的讲解，可以回顾一下。</p>
@@ -531,7 +531,7 @@ public class Main {
 }
 </pre>
 
-<p>这个例子同样是将java对象转化为JSON字符串并且输出，也来看看下面的性能分析图表：<br><img src="Gson-Parse-One/typeadapter-liu.png" alt="ser"><br>可以看到的是同样的最初产生的数据是89MB,序列化过程将java对象转化为JSON字符串花了大概三秒钟的时间，消耗大概160MB的内存。也就是说序列化1MB的数据我们需要大概2MB的内存空间。相比于之前的两种方法，有了很大的改进。<br><img src="Gson-Parse-One/typeadapter-liu-one.png" alt="ser"></p>
+<p>这个例子同样是将java对象转化为JSON字符串并且输出，也来看看下面的性能分析图表：<br><img src="/2017/04/10/Gson-Parse-One/typeadapter-liu.png" alt="ser"><br>可以看到的是同样的最初产生的数据是89MB,序列化过程将java对象转化为JSON字符串花了大概三秒钟的时间，消耗大概160MB的内存。也就是说序列化1MB的数据我们需要大概2MB的内存空间。相比于之前的两种方法，有了很大的改进。<br><img src="/2017/04/10/Gson-Parse-One/typeadapter-liu-one.png" alt="ser"></p>
 <p>TypeAdapter-with-Stream-Stages<br>这个方法同样的是使用了两个阶段。不过在上面一个示例中的绿色方块部分在这里没有使用，这里直接完成了java对象到IO 缓冲区的转化并写入文件。</p>
 <p>虽然这里并不是Gson的关系，但是我们使用Gson的方法极大的减少了内存消耗，所以说在使用开源库的时候，能够正确高效的使用API也显得尤为重要。</p>
 <h1 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h1><p>在上面的分析过程中，我们采用了GSON的两种不同的方然完成了序列化一个大数据的过程，并且比较了不同的方法之间的差异。上面的第三种方法（TypeAdapter的流式处理）被论证为最合适的，消耗最少内存的一种方法。</p>
@@ -955,7 +955,7 @@ $ npm config set registry https://registry.npm.taobao.org npm info underscore
         
           
             <h1 id="概述："><a href="#概述：" class="headerlink" title="概述："></a>概述：</h1><p>Handler、Looper、Message可谓android中最基本的消息处理机制，但是要理清这三者关系需要一定的研究。本文从java层和native层深入探讨一下这里面的关系。</p>
-<p>##Java层理解<br>Native层关系图：<br><img src="Handler-Looper-Message-0/message-java.jpg" alt="关系图"></p>
+<p>##Java层理解<br>Native层关系图：<br><img src="/2017/04/09/Handler-Looper-Message-0/message-java.jpg" alt="关系图"></p>
 <p>###实例<br>先展示一个典型的例子：</p>
 <pre>
 class LooperThread extends Thread {
@@ -972,8 +972,8 @@ class LooperThread extends Thread {
 }
 </pre>
 
-<p>###消息发送图：<br><img src="Handler-Looper-Message-0/java_sendmessage.png" alt="消息图"></p>
-<p>###消息流程图：<br><img src="Handler-Looper-Message-0/message-looper.jpg" alt="流程图"></p>
+<p>###消息发送图：<br><img src="/2017/04/09/Handler-Looper-Message-0/java_sendmessage.png" alt="消息图"></p>
+<p>###消息流程图：<br><img src="/2017/04/09/Handler-Looper-Message-0/message-looper.jpg" alt="流程图"></p>
 <p>图解：</p>
 <p>####Handler通过sendMessage()发送Message到MessageQueue队列；</p>
 <p>####Looper通过loop()，不断提取出达到触发条件的Message，并将Message交给target来处理；</p>
@@ -1020,7 +1020,7 @@ private native static void nativeSetFileDescriptorEvents(long ptr, int fd, int e
 </pre>
 
 <p>初始化过程的调用链如下：</p>
-<p><img src="Handler-Looper-Message-0/native_init.png" alt="init"><br>其中epoll_create/epoll_ctl源码如下：</p>
+<p><img src="/2017/04/09/Handler-Looper-Message-0/native_init.png" alt="init"><br>其中epoll_create/epoll_ctl源码如下：</p>
 <pre>
 void Looper::rebuildEpollLocked() {
     if (mEpollFd >= 0) {
@@ -1141,12 +1141,12 @@ Done: ;
 
 <p>这里后面处理的message，是native层的消息，并不是java层发送的message。<br>具体代码如下：</p>
 <p><pre><br>void Looper::sendMessageAtTime(nsecs_t uptime, const sp<messagehandler>&amp; handler,<br>        const Message&amp; message) {<br>#if DEBUG_CALLBACKS<br>    ALOGD(“%p ~ sendMessageAtTime - uptime=%lld, handler=%p, what=%d”,<br>            this, uptime, handler.get(), message.what);<br>#endif<br>    size_t i = 0;<br>    { // acquire lock<br>        AutoMutex _l(mLock);<br>        size_t messageCount = mMessageEnvelopes.size();<br>        while (i &lt; messageCount &amp;&amp; uptime &gt;= mMessageEnvelopes.itemAt(i).uptime) {<br>            i += 1;<br>        }<br>        MessageEnvelope messageEnvelope(uptime, handler, message);<br>        mMessageEnvelopes.insertAt(messageEnvelope, i, 1);<br>        // Optimization: If the Looper is currently sending a message, then we can skip<br>        // the call to wake() because the next thing the Looper will do after processing<br>        // messages is to decide when the next wakeup time should be.  In fact, it does<br>        // not even matter whether this code is running on the Looper thread.<br>        if (mSendingMessage) {<br>            return;<br>        }<br>    } // release lock<br>    // Wake the poll loop only when we enqueue a new message at the head.<br>    if (i == 0) {<br>        wake();<br>    }<br>}<br></messagehandler></pre><br>这里会对mMessageEnvelopes队列进行插入message消息，属于native层的消息。</p>
-<h3 id="nativeWake"><a href="#nativeWake" class="headerlink" title="nativeWake()"></a>nativeWake()</h3><p>nativeWake用于唤醒功能，在添加消息到消息队列enqueueMessage(), 或者把消息从消息队列中全部移除quit()，再有需要时都会调用 nativeWake方法。包含唤醒过程的添加消息的调用链，如下：<br><img src="Handler-Looper-Message-0/native_wake.png" alt="nativeWake"></p>
+<h3 id="nativeWake"><a href="#nativeWake" class="headerlink" title="nativeWake()"></a>nativeWake()</h3><p>nativeWake用于唤醒功能，在添加消息到消息队列enqueueMessage(), 或者把消息从消息队列中全部移除quit()，再有需要时都会调用 nativeWake方法。包含唤醒过程的添加消息的调用链，如下：<br><img src="/2017/04/09/Handler-Looper-Message-0/native_wake.png" alt="nativeWake"></p>
 <p>最终会唤醒epoll_wait，进行消息的分发处理。</p>
 <p>###小结<br>本节介绍MessageQueue的native()方法，经过层层调用：</p>
 <p>nativeInit()方法，最终实现由epoll机制中的epoll_create()/epoll_ctl()完成；<br>nativeDestroy()方法，最终实现由RefBase::decStrong()完成；<br>nativePollOnce()方法，最终实现由Looper::pollOnce()完成；<br>nativeWake()方法，最终实现由Looper::wake()调用write方法，向管道写入字符；<br>nativeIsPolling()，nativeSetFileDescriptorEvents()这两个方法类似，</p>
 <p>##总结</p>
-<p>MessageQueue通过mPtr变量保存NativeMessageQueue对象，从而使得MessageQueue成为Java层和Native层的枢纽，既能处理上层消息，也能处理native层消息；下面列举Java层与Native层的对应图<br><img src="Handler-Looper-Message-0/handler_arch.png" alt="arch"></p>
+<p>MessageQueue通过mPtr变量保存NativeMessageQueue对象，从而使得MessageQueue成为Java层和Native层的枢纽，既能处理上层消息，也能处理native层消息；下面列举Java层与Native层的对应图<br><img src="/2017/04/09/Handler-Looper-Message-0/handler_arch.png" alt="arch"></p>
 
           
         

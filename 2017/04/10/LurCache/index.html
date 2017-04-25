@@ -103,7 +103,7 @@ public class LruCache {
     private final LinkedHashMap map;
 
     /** Size of this cac">
-<meta property="og:image" content="http://HHcola.github.io/LurCache/linkedhash.png">
+<meta property="og:image" content="http://HHcola.github.io/2017/04/10/LurCache/linkedhash.png">
 <meta property="og:updated_time" content="2017-04-10T13:00:59.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LurCache">
@@ -113,7 +113,7 @@ public class LruCache {
     private final LinkedHashMap map;
 
     /** Size of this cac">
-<meta name="twitter:image" content="http://HHcola.github.io/LurCache/linkedhash.png">
+<meta name="twitter:image" content="http://HHcola.github.io/2017/04/10/LurCache/linkedhash.png">
 
 
 
@@ -383,7 +383,7 @@ public class LruCache<k, v=""> {
 
 <p>其中用到的数据对象是LinkedHashMap，所以不要把这个类想的多么深不可测，还是数据结构 + 算法。既然用到了这个map，自然就要有添加修改和删除操作了，用到了最近最少使用算法，自然就要用到优先级了。</p>
 <h1 id="LinkedHashMap-Lru算法"><a href="#LinkedHashMap-Lru算法" class="headerlink" title="LinkedHashMap Lru算法"></a>LinkedHashMap Lru算法</h1><p>LRU算法是LinkedHashMap本身通过双向链表来实现，当某个位置被使用(例如get操作)，通过调整链表的指向将该位置调整到头位置， 新加入的内容直接放在链表头，如此一来，最近被使用的内容就向链表头移动，需要替换时(已经达到容量时)，链表最后的位置就是最近最少使用的位置。</p>
-<p><img src="LurCache/linkedhash.png" alt="map"></p>
+<p><img src="/2017/04/10/LurCache/linkedhash.png" alt="map"></p>
 
       
     </div>
